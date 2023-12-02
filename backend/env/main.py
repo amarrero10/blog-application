@@ -17,6 +17,7 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost",
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
@@ -28,40 +29,36 @@ app.add_middleware(
 )
 
 # Routes
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
 @app.get("/api/blogs")
 async def read_blogs():
     response = await fetch_all_blogs()
     return response
 
-@app.get("/api/blogs/{title}", response_model=Blog)
-async def read_blog(title: str):
-    response = await fetch_one_blog(title)
+@app.get("/api/blogs/{blog_id}", response_model=Blog)
+async def read_blog(blog_id: str):
+    response = await fetch_one_blog(blog_id)
     if response:
         return response
-    raise HTTPException(404, f"There is no blog with the title {title}")
+    raise HTTPException(404, f"There is no blog with the id {blog_id}")
+
 
 @app.post("/api/blogs", response_model=Blog)
-async def post_blog(data:Blog):
+async def post_blog(data: Blog):
     response = await create_blog(data.model_dump())
     if response:
         return response
     raise HTTPException(400, "Something went wrong")
 
-@app.put("/api/blogs/{title}", response_model=Blog)
-async def put_blog(title: str, data: str):
-    response = await update_blog(title, data)
+@app.put("/api/blogs/{blog_id}", response_model=Blog)
+async def put_blog(blog_id: str, data: str):
+    response = await update_blog(blog_id, data)
     if response:
         return response
-    raise HTTPException(404, f"There is no blog with the title {title}")
+    raise HTTPException(404, f"There is no blog with the id {blog_id}")
 
-
-@app.delete("/api/blogs/{title}")
-async def delete_blog(title: str):
-    response = await remove_blog(title)
+@app.delete("/api/blogs/{blog_id}")
+async def delete_blog(blog_id: str):
+    response = await remove_blog(blog_id)
     if response:
         return "Successfully deleted blog"
-    raise HTTPException(404, f"There is no blog with the title {title}")
+    raise HTTPException(404, f"There is no blog with the id {blog_id}")
