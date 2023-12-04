@@ -1,0 +1,7 @@
+.btnPrimary {
+  @apply bg-warmGray text-offWhite py-3 px-10 rounded;
+}
+
+.btnSecondary {
+  @apply bg-khaki text-offWhite py-3 px-10 rounded;
+}

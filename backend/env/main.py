@@ -5,9 +5,11 @@ from database import (
     fetch_all_blogs,
     create_blog,
     update_blog,
-    remove_blog
+    remove_blog,
+    collection
 )
 from models import Blog
+from schemas import multiple_blogs, individual_blog
 
 # App
 app = FastAPI()
@@ -31,8 +33,9 @@ app.add_middleware(
 # Routes
 @app.get("/api/blogs")
 async def read_blogs():
-    response = await fetch_all_blogs()
-    return response
+    cursor = collection.find({})
+    blogs = await cursor.to_list(length=None)  # Convert the cursor to a list
+    return multiple_blogs(blogs)
 
 @app.get("/api/blogs/{blog_id}", response_model=Blog)
 async def read_blog(blog_id: str):
@@ -44,10 +47,11 @@ async def read_blog(blog_id: str):
 
 @app.post("/api/blogs", response_model=Blog)
 async def post_blog(data: Blog):
-    response = await create_blog(data.model_dump())
+    response = await create_blog(data)
     if response:
         return response
     raise HTTPException(400, "Something went wrong")
+
 
 @app.put("/api/blogs/{blog_id}", response_model=Blog)
 async def put_blog(blog_id: str, data: str):

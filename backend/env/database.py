@@ -9,8 +9,6 @@ database = client.BlogWebsite
 collection = database.blogs
 
 
-from bson import ObjectId
-
 async def fetch_one_blog(blog_id):
     try:
         # Convert the blog_id parameter to ObjectId
@@ -33,14 +31,18 @@ async def fetch_all_blogs():
     cursor = collection.find({})
     async for document in cursor:
         blog_data = document.copy()
-        blog_data['_id'] = str(blog_data.pop('_id'))
+        blog_data['_id'] = str(blog_data['_id'])  # Convert _id to string
         blogs.append(Blog(**blog_data))
     return blogs
 
-async def create_blog(blog):
-    document = blog
-    result = await collection.insert_one(document)
-    return blog
+async def create_blog(blog: Blog):
+    blog_dict = blog.model_dump()
+    result = await collection.insert_one(blog_dict)
+    inserted_id = result.inserted_id
+    inserted_blog = await collection.find_one({"_id": inserted_id})
+    return inserted_blog
+
+
 
 async def update_blog(blog_id, data):
     blog_id = ObjectId(blog_id)
@@ -58,5 +60,6 @@ async def update_blog(blog_id, data):
     return document
 
 async def remove_blog(blog_id):
+    blog_id = ObjectId(blog_id)
     result = await collection.delete_one({"_id": blog_id})
     return result.deleted_count > 0
